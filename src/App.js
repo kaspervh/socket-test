@@ -1,24 +1,45 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import logo from './logo.svg';
 import './App.css';
+import socketIOClient from 'socket.io-client';
+const ENDPONT = 'https://socket-test-backend.herokuapp.com/'
 
 function App() {
+  const [response, setResponse] = useState('');
+  const [message, setMessage] = useState('');
+  const socket = socketIOClient(ENDPONT);
+
+  useEffect(() => {
+    
+    socket.on('FromApi', data => {
+      setResponse(data)
+    })
+    console.log(response)
+  }, [socket])
+
+
+
+  const pushToEcho = () => {
+    console.log(message)
+    
+    socket.emit('FromApp', message);
+    socket.on('FromApi', data => {
+      setResponse(data)
+    })
+    setMessage('');
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="body">
+        
+        {<h1>{response}</h1>}  
+
+      </div>
+      <div className="message-box">
+        <input type="text" value={message} onChange={e => setMessage(e.target.value)}/>
+        <button onClick={pushToEcho}>Send</button>
+      </div>
     </div>
   );
 }
